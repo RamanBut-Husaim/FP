@@ -87,7 +87,8 @@
 
 (defn revise-point-potentials
   [points kernel]
-  (map #(revise-potential %1 kernel) points))
+  (->> (map #(revise-potential %1 kernel) points)
+       (sort-by #(:dist %1))))
 
 (defn calculate-min-distance
   [point points]
@@ -116,8 +117,7 @@
   "I don't do a whole lot ... yet."
   [& args]
   (println args)
-  (let [points (read-coordinates "бабочка.txt")]
+  (let [points (read-coordinates "ирисы.txt")]
     (run-clusterization points)
     #_(->> (calculate-potentials points)
          (sort-by #(:dist %1)))))
-(-main "butterfly.txt" "hamming")
