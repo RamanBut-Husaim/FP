@@ -7,10 +7,6 @@
 (def EpsHigh 0.5)
 (def EpsLow 0.15)
 
-(defn average
-  [numbers]
-  (/ (apply + numbers) (count numbers)))
-
 (defn parse-number
   [s]
   (if (re-find #"^-?\d+\.?\d*$" s)
@@ -45,15 +41,15 @@
 
 (defn create-point-with-dist
   [point dist]
-  {:coordinates (:coordinates point) :dist dist})
+  (assoc point :dist dist))
 
 (defn read-coordinates
   [fileName]
   (let [content (slurp fileName)]
-    (->> (map parse-string (clojure.string/split-lines content))
-         (map remove-nils)
-         (filter not-empty)
-         (map create-point))))
+    (reduce (fn [collection elem]
+              (let [parsed-string (remove-nils (parse-string elem))]
+                  (conj collection (create-point parsed-string))))
+            [] (clojure.string/split-lines content))))
 
 (defn potential
   [distance]
@@ -65,10 +61,7 @@
 
 (defn calculate-point-potential
   [point points distance-calculator]
-  (loop [dist 0 cnt (dec (count points))]
-    (if (= cnt -1)
-      (create-point-with-dist point dist)
-     (recur (+ dist (potential (distance-calculator (:coordinates point) (:coordinates (nth points cnt))))) (dec cnt)))))
+  (create-point-with-dist point (reduce #(+ %1 (potential (distance-calculator (:coordinates point) (:coordinates %2)))) 0 points)))
 
 (defn calculate-potentials
   [points distance-calculator]
@@ -84,12 +77,12 @@
 
 (defn revise-potential
   [point kernel distance-calculator]
-  {:coordinates (:coordinates point) :dist (- (:dist point) (* (:dist kernel) (revised-potential (distance-calculator (:coordinates point) (:coordinates kernel)))) )})
+  (assoc point :dist (- (:dist point) (* (:dist kernel) (revised-potential (distance-calculator (:coordinates point) (:coordinates kernel)))) )))
 
 (defn revise-point-potentials
   [points kernel distance-calculator]
   (->> (map #(revise-potential %1 kernel distance-calculator) points)
-       (sort-by #(:dist %1))))
+       (sort-by #(- (:dist %1)))))
 
 (defn calculate-min-distance
   [point points distance-calculator]
@@ -100,19 +93,16 @@
   [points distance-calculator]
   (let [initialPotentials
         (->> (calculate-potentials points distance-calculator)
-             (sort-by #(:dist %1)))]
-    (let [firstKernel (last initialPotentials)]
-      (loop [kernels [firstKernel] elements (butlast initialPotentials)]
-        (let [revisedPoints (revise-point-potentials elements (last kernels) distance-calculator)]
-          (let [newKernel (last revisedPoints)
-                minDist (calculate-min-distance newKernel kernels distance-calculator)]
-            (if (> (:dist newKernel) (* EpsHigh (:dist firstKernel)))
-              (recur (conj kernels newKernel) (butlast revisedPoints))
-            (if (< (:dist newKernel) (* EpsLow (:dist firstKernel)))
-              kernels
-            (if (>= (+ (/ minDist Ra) (/ (:dist newKernel) (:dist firstKernel))) 1)
-              (recur (conj kernels newKernel) (butlast revisedPoints))
-            (recur kernels (conj (butlast revisedPoints) {:coordinates (:coordinates newKernel) :dist 0})))) ))   ))                    )))
+             (sort-by #(- (:dist %1))))]
+    (let [firstKernel (first initialPotentials)]
+      (loop [kernels [firstKernel] elements (rest initialPotentials)]
+        (let [revisedPoints (revise-point-potentials elements (first kernels) distance-calculator)]
+          (let [newKernel (first revisedPoints)]
+            (cond
+              (> (:dist newKernel) (* EpsHigh (:dist firstKernel))) (recur (cons newKernel kernels) (rest revisedPoints))
+              (< (:dist newKernel) (* EpsLow (:dist firstKernel))) (sort-by #(- (:dist %1)) kernels)
+              (>= (+ (/ (calculate-min-distance newKernel kernels distance-calculator) Ra) (/ (:dist newKernel) (:dist firstKernel))) 1) (recur (cons newKernel kernels) (rest revisedPoints))
+              :else (recur kernels (cons (assoc newKernel :dist 0) (rest revisedPoints)))) )   ))                    )))
 
 (defn -main
   [& args]
@@ -120,7 +110,4 @@
     (let [points (read-coordinates (first args))
           distance (if (= (last args) "hamming") hamming-distance euclidian-distance)]
       (run-clusterization points distance))
-  (println "Not enough arguments specified")
-
-    #_(->> (calculate-potentials points)
-         (sort-by #(:dist %1)))))
+  (println "Not enough arguments specified")))
