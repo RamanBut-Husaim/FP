@@ -1,0 +1,3 @@
+http://www.leiningen.org
+http://www.lightinject.net
+http://autofac.org/
