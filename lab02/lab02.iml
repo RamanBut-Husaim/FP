@@ -18,6 +18,7 @@
     <orderEntry type="library" name="Leiningen: enlive:1.1.5" level="project" />
     <orderEntry type="library" name="Leiningen: org.clojure/clojure:1.6.0" level="project" />
     <orderEntry type="library" name="Leiningen: org.clojure/tools.nrepl:0.2.3" level="project" />
+    <orderEntry type="library" name="Leiningen: slingshot:0.12.1" level="project" />
     <orderEntry type="library" name="Leiningen: cheshire:5.3.1" level="project" />
     <orderEntry type="library" name="Leiningen: com.cognitect/transit-clj:0.8.259" level="project" />
     <orderEntry type="library" name="Leiningen: commons-codec:1.9" level="project" />
@@ -28,7 +29,6 @@
     <orderEntry type="library" name="Leiningen: org.apache.httpcomponents/httpmime:4.3.5" level="project" />
     <orderEntry type="library" name="Leiningen: org.clojure/tools.reader:0.8.10" level="project" />
     <orderEntry type="library" name="Leiningen: potemkin:0.3.8" level="project" />
-    <orderEntry type="library" name="Leiningen: slingshot:0.10.3" level="project" />
     <orderEntry type="library" name="Leiningen: com.fasterxml.jackson.core/jackson-core:2.3.1" level="project" />
     <orderEntry type="library" name="Leiningen: com.fasterxml.jackson.dataformat/jackson-dataformat-smile:2.3.1" level="project" />
     <orderEntry type="library" name="Leiningen: tigris:0.1.1" level="project" />
